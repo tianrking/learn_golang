@@ -14,8 +14,9 @@ func main() {
 	fmt.Println("Start")
 	test_array := []int{10, 20, 30, 40}
 	my_channel := make(chan num_struct)
+	bb := num_struct{}
 	for _, index := range test_array {
-		go test_gg(index, my_channel)
+		go bb.test_gg(index, my_channel)
 	}
 	time.Sleep(3 * time.Second)
 	for i := len(test_array); i > 0; i-- {
@@ -23,8 +24,10 @@ func main() {
 	}
 }
 
-func test_gg(_num int, channel chan num_struct) {
+func (w *num_struct) test_gg(_num int, channel chan num_struct) {
 	time.Sleep(2 * time.Second)
 	fmt.Println(_num)
+	w.old_num = _num
+	w.new_num = _num
 	channel <- num_struct{old_num: _num, new_num: _num + 1}
 }
