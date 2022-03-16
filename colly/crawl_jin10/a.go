@@ -52,7 +52,7 @@ func main() {
 	// c.Visit("https://ithelp.ithome.com.tw/users/20125192/ironman/3155?page=1")
 	// c.Visit("https://ithelp.ithome.com.tw/users/20125192/ironman/3155?page=2")
 	// c.Visit("https://ithelp.ithome.com.tw/users/20125192/ironman/3155?page=3")
-	// c.Visit("https://ithelp.ithome.com.tw/users/20125192/ironman/3155?page=4")
+	// c.Visit("https://ithelp.ithome.com.tw/users/20125192/ironman/3155?page=4"
 	for i := 0; i < 5; i++ {
 		url := "https://ithelp.ithome.com.tw/?page=" + string(strconv.Itoa(i))
 		// strings.Join(url, string(i))
