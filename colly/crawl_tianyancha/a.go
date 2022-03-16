@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/gocolly/colly"
 )
@@ -10,11 +9,18 @@ import (
 var count int = 0
 
 type _Result struct {
-	Text  string
-	Href  string
-	Owner string
-	Phone string
-	Email string
+	Name                 string
+	Legal_representative string
+	Leader               string
+	Capital              string
+	Date_Establishment   string
+	State                string
+	Phone                string
+	Email                string
+	Address              string
+	Text                 string
+	Href                 string
+	Contact              string
 }
 
 // 公司名称
@@ -40,12 +46,27 @@ func main() {
 	// F12 OnHTML 支持 class
 	c.OnHTML("div[class='search-item sv-search-company  ']", func(e *colly.HTMLElement) { // 每找到一個符合 goquerySelector字樣的結果，便會進這個OnHTML一次
 
-		GG.Phone = e.ChildText("div[class='title -wider text-ellipsis']")
-		GG.Text = strings.TrimSpace(e.Text)
 		// GG.Href = e.Attr("href")
-		// fmt.Print(GG.Href)
-		fmt.Println(GG.Text)
-		fmt.Println(GG.Phone)
+		// ch := e.DOM.Children()
+		//.Eq(2).Children().Eq(0).Children().Eq(0).Attr("href")
+		// GG.Href, _ = e.DOM.Find("a[class='name select-none ").Attr("href")
+		GG.Name = e.ChildText("a[class='name select-none ']")
+		GG.Href = e.ChildAttr("a[class='name select-none ']", "href")
+		GG.Leader = e.ChildText("div[class='title -wider text-ellipsis']")
+		// GG.Phone = e.ChildText("span[tyc-event-ch='CompanySearch.MoreTel']")
+		// GG.Email = e.ChildText("div[class='contact row ']")
+		GG.Contact = e.ChildText("div[class='contact row ']")
+		GG.Capital = e.ChildText("div[class='title -narrow text-ellipsis']")
+		GG.Date_Establishment = e.ChildText("div[class='title  text-ellipsis']")
+
+		fmt.Println(GG.Name)
+		fmt.Println(GG.Leader)
+		fmt.Println(GG.Capital)
+		// fmt.Println(GG.Phone)
+		// fmt.Println(GG.Email)
+		fmt.Println(GG.Contact)
+		fmt.Println(GG.Date_Establishment)
+		fmt.Println(GG.Href)
 		count++
 	})
 
