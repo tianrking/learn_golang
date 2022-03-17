@@ -3,12 +3,27 @@ package main
 import (
 	"fmt"
 	"log"
+	"strconv"
 
 	colly "github.com/gocolly/colly/v2"
 	"github.com/gocolly/colly/v2/proxy"
+	excelize "github.com/xuri/excelize/v2"
 )
 
+// var _url string = ""
+
+type GG struct {
+	_url       string
+	_name      string
+	_now_price string
+}
+
+// DOGE := GG{}
+
 func main() {
+
+	num := 0
+	f := excelize.NewFile()
 	// fName := "cryptocoinmarketcap.csv"
 
 	// file, err := os.Create(fName)
@@ -60,18 +75,88 @@ func main() {
 		// fmt.Println(reflect.TypeOf(r))
 	})
 
-	c.OnHTML("tr[class='cmc-table-row']", func(e *colly.HTMLElement) {
-		// writer.Write([]string{
-		// 	e.ChildText(".currency-name-container"),
-		// 	e.ChildText(".col-symbol"),
-		// 	e.ChildAttr("a.price", "data-usd"),
-		// 	e.ChildAttr("a.volume", "data-usd"),
-		// 	e.ChildAttr(".market-cap", "data-usd"),
-		// 	e.ChildText(".percent-1h"),
-		// 	e.ChildText(".percent-24h"),
-		// 	e.ChildText(".percent-7d"),
-		// })
-		fmt.Println(e.ChildText("a[class='cmc-table__column-name--name cmc-link']"))
+	// c.OnHTML("tr[class='s395gx-1 eChPfw cmc-table-row']", func(e *colly.HTMLElement) {
+	// 	// writer.Write([]string{\
+	// 	// fmt.Print(string(e.Text))
+
+	// 	fmt.Print(e.ChildText("td[class='name-cell']"), "       ")
+	// 	fmt.Println(e.ChildAttr("a[class='cmc-link']", "href"))
+	// })
+
+	c.OnHTML(".cmc-table__table-wrapper-outer tbody tr", func(e *colly.HTMLElement) {
+		// writer.Write([]string{\
+		// fmt.Print(string(e.Text))
+		DOGE := GG{}
+		if len(e.ChildText("td[class='name-cell']")) == 0 {
+			DOGE._url = "https://coinmarketcap.com" + e.ChildAttr("a[class='cmc-link']", "href")
+			DOGE._name = e.ChildText("a[class='cmc-table__column-name--name cmc-link']")
+			// fmt.Print(e.ChildText("a[class='cmc-table__column-name--name cmc-link']"), "       ")
+		} else {
+			DOGE._url = "https://coinmarketcap.com" + e.ChildAttr("a[class='cmc-link']", "href")
+			DOGE._name = e.ChildText("td[class='name-cell']")
+			// fmt.Print(e.ChildText("td[class='name-cell']"), "       ")
+		}
+
+		// fmt.Print(DOGE._name, " ")
+		// fmt.Print(DOGE._url, " ")
+
+		c_coin := colly.NewCollector()
+		c_coin.SetProxyFunc(rp)
+		c_coin.OnRequest(func(r *colly.Request) {
+			r.Headers.Set("Authority", "coinmarketcap.com")
+			r.Headers.Set("Cache-Control", "max-age=0")
+			r.Headers.Set("Sec-Ch-Ua", "\" Not A;Brand\";v=\"99\", \"Chromium\";v=\"99\", \"Microsoft Edge\";v=\"99\"")
+			r.Headers.Set("Sec-Ch-Ua-Mobile", "?0")
+			r.Headers.Set("Sec-Ch-Ua-Platform", "\"Windows\"")
+			r.Headers.Set("Upgrade-Insecure-Requests", "1")
+			r.Headers.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.51 Safari/537.36 Edg/99.0.1150.39")
+			r.Headers.Set("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9")
+			r.Headers.Set("Sec-Fetch-Site", "same-origin")
+			r.Headers.Set("Sec-Fetch-Mode", "navigate")
+			r.Headers.Set("Sec-Fetch-User", "?2")
+			r.Headers.Set("Sec-Fetch-Dest", "document")
+			r.Headers.Set("Referer", "https://coinmarketcap.com/all/views/all/")
+			r.Headers.Set("Accept-Language", "zh-TW,zh-HK;q=0.9,zh;q=0.8,en;q=0.7,zh-CN;q=0.6,en-GB;q=0.5,en-US;q=0.4")
+		})
+		c_coin.OnResponse(func(r *colly.Response) {
+		})
+		c_coin.OnHTML("div[class='priceValue ']", func(r *colly.HTMLElement) {
+			DOGE._now_price = string(r.Text)
+		})
+		c_coin.Visit(DOGE._url)
+
+		fmt.Print(DOGE._name, "     ")
+		fmt.Print(DOGE._now_price, "     ")
+		fmt.Println(DOGE._url)
+
+		// Create a new sheet.
+		// index := f.NewSheet("Sheet2")
+		// Set value of a cell.
+		// f.SetCellValue("Sheet2", "A2", "Hello world.")
+
+		var A_num string = "A" + strconv.Itoa(num)
+		B_price := "B" + strconv.Itoa(num)
+		C_url := "C" + strconv.Itoa(num)
+
+		// fmt.Println(A_num)
+		// fmt.Println(B_price)
+
+		// fmt.Println(reflect.TypeOf(A_num))
+		// fmt.Println(reflect.TypeOf(B_price))
+
+		f.SetCellValue("Sheet1", A_num, DOGE._name)
+		f.SetCellValue("Sheet1", B_price, DOGE._now_price)
+		f.SetCellValue("Sheet1", C_url, DOGE._url)
+		// f.SetCellValue("Sheet1", "A", 300)
+		// f.SetCellValue("Sheet1", "B5", 200)
+		// Set active sheet of the workbook.
+		// f.SetActiveSheet(index)
+		// Save spreadsheet by the given path.
+		if err := f.SaveAs("Coin_price.xlsx"); err != nil {
+			fmt.Println(err)
+		}
+		num += 1
+
 	})
 
 	c.Visit("https://coinmarketcap.com/all/views/all/")
